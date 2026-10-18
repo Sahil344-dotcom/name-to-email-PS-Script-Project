@@ -1,3 +1,9 @@
+function ConvertTo-CleanName {
+    param([string]$Name)
+
+    $Name.Trim().Normalize('FormD') -replace '\p{Mn}', '' -replace '[^a-zA-Z]', ''
+}
+
 function Get-EmailAddress {
     [CmdletBinding()]
     param(
@@ -10,8 +16,12 @@ function Get-EmailAddress {
         [string]$Domain = 'contoso.com'
     )
 
-    $initial = $FirstName.Trim().Substring(0, 1)
-    $last    = $LastName.Trim()
+    $cleanFirst = ConvertTo-CleanName $FirstName
+    $cleanLast  = ConvertTo-CleanName $LastName
 
-    "$initial$last@$Domain".ToLower()
+    if (-not $cleanFirst -or -not $cleanLast) {
+        throw "First and last name must each contain at least one letter."
+    }
+
+    "$($cleanFirst.Substring(0, 1))$cleanLast@$Domain".ToLower()
 }
